@@ -242,6 +242,10 @@ describe('Test main action', () => {
     
     test('handles invalid timeout string and falls back to default', async () => {
         const timeoutSpy = jest.spyOn(core, 'getInput').mockReturnValue(INVALID_TIMEOUT_STRING);
+
+        smMockClient
+        .on(GetSecretValueCommand)
+        .resolves({ SecretString: 'test' });
         
         await run();
         
@@ -253,6 +257,11 @@ describe('Test main action', () => {
 
     test('handles valid timeout value', async () => {
         const timeoutSpy = jest.spyOn(core, 'getInput').mockReturnValue(VALID_TIMEOUT);
+
+        smMockClient
+        .on(GetSecretValueCommand)
+        .resolves({ SecretString: 'test' });
+
         await run();
         
         expect(core.getInput).toHaveBeenCalledWith('auto-select-family-attempt-timeout');
@@ -263,10 +272,20 @@ describe('Test main action', () => {
 
     test('handles invalid negative timeout value and falls back to default', async () => {
         const timeoutSpy = jest.spyOn(core, 'getInput').mockReturnValue(INVALID_TIMEOUT_NUMBER);
-
+        
+        // Set up a simple mock response
+        smMockClient
+            .on(GetSecretValueCommand)
+            .resolves({ SecretString: 'test' });
+    
+        // If the request goes through, it means the timeout was successfully set to default
+        await run();
+    
         expect(core.getInput).toHaveBeenCalledWith('auto-select-family-attempt-timeout');
-
-
+        
         timeoutSpy.mockClear();
     });
+    
+    
+    
 });

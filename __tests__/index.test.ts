@@ -275,7 +275,7 @@ describe('Test main action', () => {
 
         await run();
         expect(core.getInput).toHaveBeenCalledWith(INVALID_TIMEOUT_STRING);
-        expect(core.getInput).toHaveBeenCalledTimes(1);
+        expect(core.getInput).toHaveBeenCalledTimes(2);
 
         booleanSpy.mockClear();
         multilineInputSpy.mockClear();
@@ -319,7 +319,7 @@ describe('Test main action', () => {
 
         await run();
         expect(core.getInput).toHaveBeenCalledWith(VALID_TIMEOUT);
-        expect(core.getInput).toHaveBeenCalledTimes(1);
+        expect(core.getInput).toHaveBeenCalledTimes(2);
 
         booleanSpy.mockClear();
         multilineInputSpy.mockClear();
@@ -363,7 +363,7 @@ describe('Test main action', () => {
 
         await run();
         expect(core.getInput).toHaveBeenCalledWith(INVALID_TIMEOUT_NUMBER);
-        expect(core.getInput).toHaveBeenCalledTimes(1);
+        expect(core.getInput).toHaveBeenCalledTimes(2);
 
         booleanSpy.mockClear();
         multilineInputSpy.mockClear();

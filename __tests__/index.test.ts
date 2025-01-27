@@ -239,135 +239,70 @@ describe('Test main action', () => {
         nameTransformationSpy.mockClear();
     });
 
-    test('Verifies getInput is called with invalid timeout string', async () => {
-        const booleanSpy = jest.spyOn(core, "getBooleanInput").mockReturnValue(true);
-        const multilineInputSpy = jest.spyOn(core, "getMultilineInput").mockReturnValue(
-            [TEST_NAME, TEST_INPUT_3, TEST_ARN_INPUT]
-        );
-        const nameTransformationSpy = jest.spyOn(core, 'getInput').mockReturnValue('uppercase');
+    
+    test('handles invalid timeout string and falls back to default', async () => {
         const timeoutSpy = jest.spyOn(core, 'getInput').mockReturnValue(INVALID_TIMEOUT_STRING);
-
-        smMockClient
-            .on(GetSecretValueCommand, { SecretId: TEST_NAME_1})
-            .resolves({ Name: TEST_NAME_1, SecretString: SECRET_1 })
-            .on(GetSecretValueCommand, {SecretId: TEST_NAME_2 })
-            .resolves({ Name: TEST_NAME_2, SecretString: SECRET_2 })
-            .on(GetSecretValueCommand, { SecretId: TEST_NAME_3 })
-            .resolves({ Name: TEST_NAME_3, SecretString: SECRET_3 })
-            .on(GetSecretValueCommand, { // Retrieve arn secret
-                SecretId: TEST_ARN_1,
-            })
-            .resolves({
-                Name: TEST_NAME_4,
-                SecretString: SECRET_4
-            })
-            .on(ListSecretsCommand)
-            .resolves({
-                SecretList: [
-                    {
-                        Name: TEST_NAME_1
-                    },
-                    {
-                        Name: TEST_NAME_2
-                    }
-                ]
-            });
+        const mockSecretsManagerConfig = jest.fn();
+        
+        jest.spyOn(SecretsManagerClient.prototype, 'config', 'get')
+            .mockImplementation(mockSecretsManagerConfig);
 
         await run();
-        expect(core.getInput).toHaveBeenCalledWith(INVALID_TIMEOUT_STRING);
-        expect(core.getInput).toHaveBeenCalledTimes(2);
-
-        booleanSpy.mockClear();
-        multilineInputSpy.mockClear();
-        nameTransformationSpy.mockClear();
+        
+        expect(core.getInput).toHaveBeenCalledWith('timeout');
+        expect(mockSecretsManagerConfig).toHaveBeenCalledWith(
+            expect.objectContaining({
+                requestHandler: expect.objectContaining({
+                    timeoutInMillis: parseInt(DEFAULT_TIMEOUT) // Should fall back to 1000
+                })
+            })
+        );
+        expect(core.info).toHaveBeenCalledWith(
+            expect.stringContaining('Invalid timeout value')
+        );
         timeoutSpy.mockClear();
     });
 
-    test('Valid timeout input', async () => {
-        const booleanSpy = jest.spyOn(core, "getBooleanInput").mockReturnValue(true);
-        const multilineInputSpy = jest.spyOn(core, "getMultilineInput").mockReturnValue(
-            [TEST_NAME, TEST_INPUT_3, TEST_ARN_INPUT]
-        );
-        const nameTransformationSpy = jest.spyOn(core, 'getInput').mockReturnValue('uppercase');
+    test('handles valid timeout value', async () => {
         const timeoutSpy = jest.spyOn(core, 'getInput').mockReturnValue(VALID_TIMEOUT);
-
-        smMockClient
-            .on(GetSecretValueCommand, { SecretId: TEST_NAME_1})
-            .resolves({ Name: TEST_NAME_1, SecretString: SECRET_1 })
-            .on(GetSecretValueCommand, {SecretId: TEST_NAME_2 })
-            .resolves({ Name: TEST_NAME_2, SecretString: SECRET_2 })
-            .on(GetSecretValueCommand, { SecretId: TEST_NAME_3 })
-            .resolves({ Name: TEST_NAME_3, SecretString: SECRET_3 })
-            .on(GetSecretValueCommand, { // Retrieve arn secret
-                SecretId: TEST_ARN_1,
-            })
-            .resolves({
-                Name: TEST_NAME_4,
-                SecretString: SECRET_4
-            })
-            .on(ListSecretsCommand)
-            .resolves({
-                SecretList: [
-                    {
-                        Name: TEST_NAME_1
-                    },
-                    {
-                        Name: TEST_NAME_2
-                    }
-                ]
-            });
+        const mockSecretsManagerConfig = jest.fn();
+        
+        jest.spyOn(SecretsManagerClient.prototype, 'config', 'get')
+            .mockImplementation(mockSecretsManagerConfig);
 
         await run();
-        expect(core.getInput).toHaveBeenCalledWith(VALID_TIMEOUT);
-        expect(core.getInput).toHaveBeenCalledTimes(2);
-
-        booleanSpy.mockClear();
-        multilineInputSpy.mockClear();
-        nameTransformationSpy.mockClear();
+        
+        expect(core.getInput).toHaveBeenCalledWith('timeout');
+        expect(mockSecretsManagerConfig).toHaveBeenCalledWith(
+            expect.objectContaining({
+                requestHandler: expect.objectContaining({
+                    timeoutInMillis: parseInt(VALID_TIMEOUT) // Should use 3000
+                })
+            })
+        );
         timeoutSpy.mockClear();
     });
 
-    test('Verifies getInput is called with an invalid timeout less than 0', async () => {
-        const booleanSpy = jest.spyOn(core, "getBooleanInput").mockReturnValue(true);
-        const multilineInputSpy = jest.spyOn(core, "getMultilineInput").mockReturnValue(
-            [TEST_NAME, TEST_INPUT_3, TEST_ARN_INPUT]
-        );
-        const nameTransformationSpy = jest.spyOn(core, 'getInput').mockReturnValue('uppercase');
+    test('handles invalid negative timeout value and falls back to default', async () => {
         const timeoutSpy = jest.spyOn(core, 'getInput').mockReturnValue(INVALID_TIMEOUT_NUMBER);
-
-        smMockClient
-            .on(GetSecretValueCommand, { SecretId: TEST_NAME_1})
-            .resolves({ Name: TEST_NAME_1, SecretString: SECRET_1 })
-            .on(GetSecretValueCommand, {SecretId: TEST_NAME_2 })
-            .resolves({ Name: TEST_NAME_2, SecretString: SECRET_2 })
-            .on(GetSecretValueCommand, { SecretId: TEST_NAME_3 })
-            .resolves({ Name: TEST_NAME_3, SecretString: SECRET_3 })
-            .on(GetSecretValueCommand, { // Retrieve arn secret
-                SecretId: TEST_ARN_1,
-            })
-            .resolves({
-                Name: TEST_NAME_4,
-                SecretString: SECRET_4
-            })
-            .on(ListSecretsCommand)
-            .resolves({
-                SecretList: [
-                    {
-                        Name: TEST_NAME_1
-                    },
-                    {
-                        Name: TEST_NAME_2
-                    }
-                ]
-            });
+        const mockSecretsManagerConfig = jest.fn();
+        
+        jest.spyOn(SecretsManagerClient.prototype, 'config', 'get')
+            .mockImplementation(mockSecretsManagerConfig);
 
         await run();
-        expect(core.getInput).toHaveBeenCalledWith(INVALID_TIMEOUT_NUMBER);
-        expect(core.getInput).toHaveBeenCalledTimes(2);
-
-        booleanSpy.mockClear();
-        multilineInputSpy.mockClear();
-        nameTransformationSpy.mockClear();
+        
+        expect(core.getInput).toHaveBeenCalledWith('timeout');
+        expect(mockSecretsManagerConfig).toHaveBeenCalledWith(
+            expect.objectContaining({
+                requestHandler: expect.objectContaining({
+                    timeoutInMillis: parseInt(DEFAULT_TIMEOUT) // Should fall back to 1000
+                })
+            })
+        );
+        expect(core.info).toHaveBeenCalledWith(
+            expect.stringContaining('Invalid timeout value')
+        );
         timeoutSpy.mockClear();
     });
 });

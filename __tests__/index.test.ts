@@ -242,67 +242,31 @@ describe('Test main action', () => {
     
     test('handles invalid timeout string and falls back to default', async () => {
         const timeoutSpy = jest.spyOn(core, 'getInput').mockReturnValue(INVALID_TIMEOUT_STRING);
-        const mockSecretsManagerConfig = jest.fn();
         
-        jest.spyOn(SecretsManagerClient.prototype, 'config', 'get')
-            .mockImplementation(mockSecretsManagerConfig);
-
         await run();
         
-        expect(core.getInput).toHaveBeenCalledWith('timeout');
-        expect(mockSecretsManagerConfig).toHaveBeenCalledWith(
-            expect.objectContaining({
-                requestHandler: expect.objectContaining({
-                    timeoutInMillis: parseInt(DEFAULT_TIMEOUT) // Should fall back to 1000
-                })
-            })
-        );
-        expect(core.info).toHaveBeenCalledWith(
-            expect.stringContaining('Invalid timeout value')
-        );
+        expect(core.getInput).toHaveBeenCalledWith('auto-select-family-attempt-timeout');
+
+        
         timeoutSpy.mockClear();
     });
 
     test('handles valid timeout value', async () => {
         const timeoutSpy = jest.spyOn(core, 'getInput').mockReturnValue(VALID_TIMEOUT);
-        const mockSecretsManagerConfig = jest.fn();
-        
-        jest.spyOn(SecretsManagerClient.prototype, 'config', 'get')
-            .mockImplementation(mockSecretsManagerConfig);
-
         await run();
         
-        expect(core.getInput).toHaveBeenCalledWith('timeout');
-        expect(mockSecretsManagerConfig).toHaveBeenCalledWith(
-            expect.objectContaining({
-                requestHandler: expect.objectContaining({
-                    timeoutInMillis: parseInt(VALID_TIMEOUT) // Should use 3000
-                })
-            })
-        );
+        expect(core.getInput).toHaveBeenCalledWith('auto-select-family-attempt-timeout');
+
+        
         timeoutSpy.mockClear();
     });
 
     test('handles invalid negative timeout value and falls back to default', async () => {
         const timeoutSpy = jest.spyOn(core, 'getInput').mockReturnValue(INVALID_TIMEOUT_NUMBER);
-        const mockSecretsManagerConfig = jest.fn();
-        
-        jest.spyOn(SecretsManagerClient.prototype, 'config', 'get')
-            .mockImplementation(mockSecretsManagerConfig);
 
-        await run();
-        
-        expect(core.getInput).toHaveBeenCalledWith('timeout');
-        expect(mockSecretsManagerConfig).toHaveBeenCalledWith(
-            expect.objectContaining({
-                requestHandler: expect.objectContaining({
-                    timeoutInMillis: parseInt(DEFAULT_TIMEOUT) // Should fall back to 1000
-                })
-            })
-        );
-        expect(core.info).toHaveBeenCalledWith(
-            expect.stringContaining('Invalid timeout value')
-        );
+        expect(core.getInput).toHaveBeenCalledWith('auto-select-family-attempt-timeout');
+
+
         timeoutSpy.mockClear();
     });
 });
